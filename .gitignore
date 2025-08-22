@@ -38,3 +38,16 @@ __pycache__/
 venv/
 .venv/
 node_modules/
+
+
+
+# 看看哪些被忽略了
+# git status --ignored
+
+# 排查某个文件为何被忽略：
+# git check-ignore -v app.py
+
+# 如需更加精确的选中
+# !templates/home.html
+# !static/css/
+# !static/css/main.css
