@@ -1,0 +1,40 @@
+# 1) 默认忽略所有文件
+*
+
+# 2) 但允许这些文件存在于 Git（先放行目录本身）
+!.gitignore
+!README.md
+!LICENSE
+!requirements.txt
+!pyproject.toml
+!setup.cfg
+
+# 3) 明确允许跟踪的源码与目录（示例：你的 Flask 项目）
+!app.py
+
+!templates/
+!templates/**
+
+!static/
+!static/**
+
+# !Benity/        # 如果你有其他包结构/子模块，按需放行
+# !Benity/**
+
+# 4) 可选：允许跟踪的配置与脚本
+# !scripts/
+# !scripts/**
+
+# 5) 继续忽略敏感/无关文件，即使它们在白名单目录中（优先级更高）
+.env
+.env.*
+*.secret
+*.key
+__pycache__/
+*.py[cod]
+*.log
+.DS_Store
+.vscode/
+venv/
+.venv/
+node_modules/

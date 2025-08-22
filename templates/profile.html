@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<title>个人资料</title>
+<style>
+body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji"; background: var(--bg); color: var(--text); }
+.form-title { text-align: center; margin: 0 0 20px; font-size: 28px; letter-spacing: 0.4px; }
+.text-center { text-align: center; }
+.form-container { max-width: 860px; }
+</style>
+</head>
+<body>
+<main class="container">
+  <section class="form-card" style="max-width: 640px; margin: 50px auto;">
+    <h2 class="form-title">编辑个人资料</h2>
+    <form method="post" class="form-grid">
+      <div>
+        <label for="name">姓名</label>
+        <input type="text" id="name" name="name" class="input" value="{{ user.name }}" required>
+      </div>
+      <div>
+        <label for="student_id">学号（不可更改）</label>
+        <input type="text" id="student_id" name="student_id" class="input" value="{{ user.student_id }}" disabled>
+      </div>
+      <div>
+        <label for="gender">性别</label>
+        <select name="gender" id="gender" class="input select">
+          <option value="男" {% if user.gender == '男' %}selected{% endif %}>男</option>
+          <option value="女" {% if user.gender == '女' %}selected{% endif %}>女</option>
+        </select>
+      </div>
+      <div>
+        <label for="stage">学段</label>
+        <select name="stage" id="stage" class="input select">
+          <option value="本科" {% if user.academic_stage == '本科' %}selected{% endif %}>本科</option>
+          <option value="硕士" {% if user.academic_stage == '硕士' %}selected{% endif %}>硕士</option>
+          <option value="博士" {% if user.academic_stage == '博士' %}selected{% endif %}>博士</option>
+        </select>
+      </div>
+      <div>
+        <label for="nickname">昵称</label>
+        <input type="text" id="nickname" name="nickname" class="input" value="{{ user.nickname }}" required>
+      </div>
+      <div>
+        <label for="intro">自我介绍</label>
+        <textarea id="intro" name="intro" class="textarea">{{ user.intro }}</textarea>
+      </div>
+      <!-- 如需更改密钥，可在后续增加相应输入框 -->
+      <div>
+        <button type="submit" class="btn btn-primary btn-block">保存</button>
+      </div>
+    </form>
+
+    <p class="text-center" style="margin-top: 10px;">
+      <a href="{{ url_for('home') }}">返回主页</a>
+    </p>
+  </section>
+</main>
+
+<script>
+  // 自动应用深色主题（与主页一致）
+  if (localStorage.getItem('darkMode') === 'on') {
+    document.documentElement.classList.add('dark-mode');
+  }
+</script>
+</body>
+</html>

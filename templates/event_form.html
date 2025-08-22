@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<title>活动{% if event %}编辑{% else %}发布{% endif %}</title>
+<style>
+body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji"; }
+.form-container { max-width: 860px; }
+.checkbox-row { display:flex; align-items:center; gap:8px; }
+.helper { color: var(--muted); font-size: 13px; }
+.inline { display:inline; }
+</style>
+</head>
+<body>
+<main class="container">
+  <section class="form-card">
+    <h2>{{ event.name if event else '发布新活动' }}</h2>
+    <form method="post" class="form-grid">
+      <div>
+        <label for="name">活动名称</label>
+        <input type="text" name="name" id="name" class="input" placeholder="例如：羽毛球友谊赛 / 读书会" value="{{ event.name if event else '' }}" required>
+      </div>
+
+      <div>
+        <label for="intro">活动介绍</label>
+        <textarea name="intro" id="intro" class="textarea" placeholder="一句话说明活动亮点、面向对象、准备内容等...">{{ event.intro if event else '' }}</textarea>
+      </div>
+
+      <div>
+        <label for="time">活动时间</label>
+        <input type="text" name="time" id="time" class="input" placeholder="YYYY-MM-DD HH:MM" value="{{ event.time if event else '' }}">
+        <p class="helper">请使用 24 小时制，例：2025-05-20 18:30</p>
+      </div>
+
+      <div>
+        <label for="location">活动形式与地点</label>
+        <input type="text" name="location" id="location" class="input" placeholder="例如：线下 · 图书馆A区 / 线上 · Zoom" value="{{ event.location if event else '' }}">
+      </div>
+
+      <div class="mb-3">
+        <label for="link" class="form-label">活动链接（可选）</label>
+        <input type="url" class="form-control" id="link" name="link"
+              value="{{ event.link if event else '' }}" placeholder="https://...">
+        <div class="form-text">可放报名页、微信群二维码页、外部说明页等。</div>
+      </div>
+      
+      <div>
+        <label for="capacity">活动人数上限</label>
+        <input type="text" name="capacity" id="capacity" class="input" placeholder="例如：20" value="{{ event.capacity if event else '' }}" required>
+      </div>
+
+      {% if not event %}
+      <div class="checkbox-row">
+        <input type="checkbox" id="anonymous" name="anonymous">
+        <label for="anonymous" class="inline">匿名发布</label>
+      </div>
+      {% else %}
+      <div class="helper">组织者：{% if event.anon_organizer %}匿名{% else %}{{ organizer_nickname }}{% endif %}</div>
+      {% endif %}
+
+      <div>
+        <button type="submit" class="btn btn-primary btn-block">{% if event %}保存修改{% else %}发布活动{% endif %}</button>
+      </div>
+    </form>
+
+    <p style="text-align:center; margin-top: 16px;">
+      <a href="{{ url_for('home') }}">返回主页</a>
+    </p>
+  </section>
+</main>
+
+<script>
+  // Auto-apply dark mode based on saved preference
+  if (localStorage.getItem("darkMode") === "on") {
+    document.documentElement.classList.add("dark-mode");
+  }
+</script>
+</body>
+</html>

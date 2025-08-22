@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>主页</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<style>
+body { margin: 0; font-family: sans-serif; overflow: hidden; }
+#graph-container { width: 100vw; height: 100vh; background: #fff; }
+.menu { position: absolute; top: 10px; left: 10px; z-index: 2; }
+.menu a, .menu button {
+    margin-right: 10px; text-decoration: none;
+    color: #000; background: rgba(255,255,255,0.7);
+    padding: 5px 10px; border-radius: 4px;
+}
+.menu a:hover, .menu button:hover { background: rgba(0,0,0,0.1); }
+#infoBubble {
+    position: absolute; z-index: 3;
+    background: #fff; color: #000;
+    border: 1px solid #333; border-radius: 4px;
+    padding: 10px; display: none; max-width: 250px;
+}
+#infoBubble a { color: #06c; text-decoration: none; margin-right: 5px; }
+#infoBubble a:hover { text-decoration: underline; }
+.link { stroke: #888; stroke-width: 1px; }
+.node { cursor: pointer; }
+.user-node { /* 用户节点（圆形） */ }
+.event-node, .affair-node { stroke: #000; stroke-width: 1px; }
+.dark-mode { background-color: #121212; color: #e0e0e0; }
+.dark-mode #graph-container { background-color: #121212; }
+.dark-mode .menu a, .dark-mode .menu button {
+    color: #e0e0e0; background: rgba(40,40,40,0.9);
+}
+.dark-mode .menu a:hover, .dark-mode .menu button:hover {
+    background: rgba(255,255,255,0.15);
+}
+.dark-mode #infoBubble { background: #1e1e1e; color: #f5f5f5; border-color: #555; }
+.dark-mode .link { stroke: #666; }
+.dark-mode .event-node, .dark-mode .affair-node { stroke: #ccc; }
+</style>
+</head>
+<body>
+<div class="menu">
+  <a href="{{ url_for('profile') }}">个人资料</a>
+  <a href="{{ url_for('event_form') }}">发布活动</a>
+  <a href="{{ url_for('affair_form') }}">发布事务</a>
+  <a href="{{ url_for('search') }}">搜索</a>
+  {% if query_back %}<a href="{{ url_for('search') }}?q={{ query_back }}">返回搜索结果</a>{% endif %}
+  <button type="button" onclick="toggleDarkMode()">夜间模式</button>
+  <a href="{{ url_for('logout') }}">退出</a>
+</div>
+<div id="graph-container">
+  <svg id="graph" width="100%" height="100%"></svg>
+</div>
+<div id="infoBubble"></div>
+<script src="https://d3js.org/d3.v6.min.js"></script>
+<script>
+  window.graphData = {{ graph_data|tojson }};
+  window.currentUserId = {{ current_user_id|tojson }};
+  window.followingList = {{ following_list|tojson }};
+  window.anonJoinedEvents = {{ anon_joined_events|tojson }};
+  window.joinedEvents = {{ joined_events|tojson }};
+  window.focusTarget = "{{ focus_target if focus_target else '' }}";
+</script>
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

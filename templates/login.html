@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<title>登录</title>
+<style>
+body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji"; background: var(--bg); color: var(--text); }
+.form-title { text-align: center; margin: 0 0 20px; font-size: 28px; letter-spacing: 0.4px; }
+.text-center { text-align: center; }
+.error { color: #ef4444; text-align: center; margin-bottom: 12px; }
+</style>
+</head>
+<body>
+<main class="container">
+  <section class="form-card" style="max-width: 420px; margin: 80px auto;">
+    <h2 class="form-title">用户登录</h2>
+    {% if error %}<p class="error">{{ error }}</p>{% endif %}
+    <form method="post" class="form-grid">
+      <div>
+        <label for="student_id">学号</label>
+        <input type="text" name="student_id" id="student_id" class="input" placeholder="请输入学号" required>
+      </div>
+      <div>
+        <label for="secret_key">密钥</label>
+        <input type="password" name="secret_key" id="secret_key" class="input" placeholder="请输入密钥" required>
+      </div>
+      <div>
+        <button type="submit" class="btn btn-primary btn-block">登录</button>
+      </div>
+    </form>
+    <p class="text-center" style="margin-top: 12px;">
+      没有账号？<a href="{{ url_for('register') }}">注册</a>
+    </p>
+  </section>
+</main>
+
+<script>
+  // Auto-apply dark mode based on saved preference
+  if (localStorage.getItem("darkMode") === "on") {
+    document.documentElement.classList.add("dark-mode");
+  }
+</script>
+</body>
+</html>

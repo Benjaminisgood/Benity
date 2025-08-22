@@ -1,0 +1,167 @@
+/* ===== Global Theme Variables (Light & Dark) ===== */
+:root {
+  --bg: #ffffff;
+  --text: #111418;
+  --muted: #6b7280;
+  --surface: #ffffff;
+  --surface-2: #f6f7f9;
+  --surface-border: #e5e7eb;
+  --accent: #3b82f6;          /* primary accent */
+  --accent-contrast: #ffffff;
+  --ring: rgba(59,130,246,0.45);
+  --shadow: 0 8px 24px rgba(0,0,0,0.08);
+  --radius: 14px;
+
+  --input-bg: #ffffff;
+  --input-text: #111418;
+  --input-border: #d1d5db;
+  --input-placeholder: #9ca3af;
+
+  --button-bg: var(--accent);
+  --button-text: var(--accent-contrast);
+  --button-bg-hover: #2f6ad4;
+
+  --link: #2563eb;
+  --link-hover: #1d4ed8;
+}
+
+.dark-mode {
+  --bg: #0f1115;
+  --text: #e5e7eb;
+  --muted: #9aa0aa;
+  --surface: #16181d;
+  --surface-2: #111318;
+  --surface-border: #2a2f36;
+  --accent: #8ab4ff;
+  --accent-contrast: #0b0e13;
+  --ring: rgba(138,180,255,0.45);
+  --shadow: 0 12px 32px rgba(0,0,0,0.45);
+
+  --input-bg: #12141a;
+  --input-text: #e5e7eb;
+  --input-border: #2a2f36;
+  --input-placeholder: #7b8694;
+
+  --button-bg: var(--accent);
+  --button-text: #0b0e13;
+  --button-bg-hover: #75a6ff;
+
+  --link: #8ab4ff;
+  --link-hover: #a6c4ff;
+}
+
+/* ===== Resets tied to variables ===== */
+html, body {
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Make links consistent across pages */
+a { color: var(--link); text-decoration: none; }
+a:hover { color: var(--link-hover); text-decoration: underline; }
+
+/* ===== Form/Card Layout ===== */
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 32px 20px;
+}
+
+.form-card {
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 28px;
+}
+
+.form-card h2 {
+  margin: 0 0 20px;
+  font-size: 28px;
+  letter-spacing: 0.4px;
+}
+
+.form-grid { display: grid; gap: 16px; }
+
+/* Labels & Fields */
+label {
+  display: block;
+  font-size: 14px;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.input, .textarea, .select {
+  width: 100%;
+  background: var(--input-bg);
+  color: var(--input-text);
+  border: 1px solid var(--input-border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  outline: none;
+  transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
+}
+
+.textarea { min-height: 120px; resize: vertical; }
+
+.input::placeholder,
+.textarea::placeholder { color: var(--input-placeholder); }
+
+.input:focus, .textarea:focus, .select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px var(--ring);
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform .06s ease, filter .2s ease, background .2s ease, border-color .2s ease;
+}
+
+.btn:active { transform: translateY(1px); }
+
+.btn-primary {
+  background: var(--button-bg);
+  color: var(--button-text);
+  border-color: transparent;
+}
+.btn-primary:hover { background: var(--button-bg-hover); filter: brightness(1.02); }
+
+.btn-block { width: 100%; }
+
+/* Home helpers (graph) keep using variables */
+#graph-container { background: var(--bg); }
+.menu a, .menu button { color: var(--text); background: rgba(40,40,40,0.06); }
+.dark-mode .menu a, .dark-mode .menu button { background: rgba(255,255,255,0.06); }
+.menu a:hover, .menu button:hover { background: rgba(127,127,127,0.12); }
+#infoBubble { background: var(--surface); color: var(--text); border: 1px solid var(--surface-border); }
+.link { stroke: #6b7280; }
+.dark-mode .link { stroke: #4b5563; }
+.event-node, .affair-node { stroke: #4b5563; }
+.dark-mode .event-node, .dark-mode .affair-node { stroke: #9aa0aa; }
+
+
+
+/* Fallback: 先给 line 一个看得见的颜色 */
+.link { stroke: #2458a0; stroke-width: 1px; opacity: .75; }
+
+/* 如果浏览器支持 color-mix，就用主题色计算更协调的颜色 */
+@supports (color: color-mix(in srgb, red 50%, blue)) {
+  .link { stroke: color-mix(in srgb, var(--text) 35%, transparent); }
+}
+
+/* 避免 svg 作为 inline 元素在某些浏览器高度塌陷 */
+svg#graph { display: block; }
+
+
+

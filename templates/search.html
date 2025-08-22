@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<title>搜索</title>
+<style>
+body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji"; margin: 20px; background: var(--bg); color: var(--text); }
+.search-container { max-width: 900px; margin: 0 auto; }
+.section { margin-top: 20px; }
+.section h3 { margin: 0 0 8px; }
+.list { list-style: none; padding-left: 0; margin: 0; }
+.list li { margin: 6px 0; }
+.helper { color: var(--muted); font-size: 13px; }
+</style>
+</head>
+<body>
+<main class="container">
+  <section class="form-card">
+    <h2>搜索</h2>
+    <form method="get" class="form-grid" style="grid-template-columns: 1fr auto; align-items: center;">
+      <input type="text" name="q" value="{{ request.args.get('q','') }}" class="input" placeholder="输入关键字（用户/活动/事务）...">
+      <button type="submit" class="btn btn-primary">搜索</button>
+    </form>
+    <p class="helper">按昵称/自我介绍/活动名/事务内容搜索，回车查看结果。</p>
+
+    {% if query %}
+      <div class="section">
+        <h3>用户</h3>
+        {% if users %}
+          <ul class="list">
+          {% for u in users %}
+            <li>
+              <a href="{{ url_for('home') }}?focus=u{{ u.id }}&q={{ query|urlencode }}">{{ u.nickname }}</a>
+            </li>
+          {% endfor %}
+          </ul>
+        {% else %}
+          <p class="helper">没有找到相关用户</p>
+        {% endif %}
+      </div>
+
+      <div class="section">
+        <h3>活动</h3>
+        {% if events %}
+          <ul class="list">
+          {% for e in events %}
+            <li>
+              <a href="{{ url_for('home') }}?focus=e{{ e.id }}&q={{ query|urlencode }}">{{ e.name }}</a>
+            </li>
+          {% endfor %}
+          </ul>
+        {% else %}
+          <p class="helper">没有找到相关活动</p>
+        {% endif %}
+      </div>
+
+      <div class="section">
+        <h3>事务</h3>
+        {% if affairs %}
+          <ul class="list">
+          {% for f in affairs %}
+            <li>
+              <a href="{{ url_for('home') }}?focus=a{{ f.id }}&q={{ query|urlencode }}">{{ f.content[:20] }}{% if f.content|length > 20 %}...{% endif %}</a>
+            </li>
+          {% endfor %}
+          </ul>
+        {% else %}
+          <p class="helper">没有找到相关事务</p>
+        {% endif %}
+      </div>
+
+      <p style="margin-top: 16px;"><a href="{{ url_for('home') }}">返回主页</a></p>
+    {% endif %}
+  </section>
+</main>
+
+<script>
+  if (localStorage.getItem('darkMode') === 'on') {
+    document.documentElement.classList.add('dark-mode');
+  }
+</script>
+</body>
+</html>

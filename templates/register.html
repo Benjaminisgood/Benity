@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>注册</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji"; background: var(--bg); color: var(--text); }
+    .form-title { text-align: center; margin: 0 0 20px; font-size: 28px; letter-spacing: 0.4px; }
+    .text-center { text-align: center; }
+  </style>
+</head>
+<body>
+<main class="container">
+  <section class="form-card" style="max-width: 640px; margin: 50px auto;">
+    <h2 class="form-title">用户注册</h2>
+    {% if error %}<p class="error" style="color:#ef4444; text-align:center; margin-bottom:12px;">{{ error }}</p>{% endif %}
+    <form method="post" class="form-grid">
+      <div>
+        <label for="name">姓名</label>
+        <input type="text" name="name" id="name" class="input" placeholder="请输入真实姓名，仅用于确定身份，不会对外公开" required>
+      </div>
+      <div>
+        <label for="student_id">学号</label>
+        <input type="text" name="student_id" id="student_id" class="input" placeholder="请输入学号，仅用于确定身份，不会对外公开" required>
+      </div>
+      <div>
+        <label for="gender">性别</label>
+        <select name="gender" id="gender" class="input select">
+          <option value="男">男</option>
+          <option value="女">女</option>
+        </select>
+      </div>
+      <div>
+        <label for="stage">学段</label>
+        <select name="stage" id="stage" class="input select">
+          <option value="本科">本科</option>
+          <option value="硕士">硕士</option>
+          <option value="博士">博士</option>
+        </select>
+      </div>
+      <div>
+        <label for="nickname">昵称</label>
+        <input type="text" name="nickname" id="nickname" class="input" placeholder="用于对外展示" required>
+      </div>
+      <div>
+        <label for="intro">自我介绍</label>
+        <textarea name="intro" id="intro" class="textarea" placeholder="介绍你自己，本站不推荐直接放上自己的联系方式哦，多通过线下交流相处，不要快餐，先确定感觉！"></textarea>
+      </div>
+      <div>
+        <label for="secret_key">密钥（密码）</label>
+        <input type="password" name="secret_key" id="secret_key" class="input" placeholder="请设置登录密钥，就是你的登录密码，记好咯，忘记可就麻烦了" required>
+      </div>
+      <div>
+        <button type="submit" class="btn btn-primary btn-block">注册</button>
+      </div>
+    </form>
+    <p class="text-center" style="margin-top: 12px;">已经有账号？<a href="{{ url_for('login') }}">登录</a></p>
+  </section>
+</main>
+
+<script>
+  // 自动应用深色主题（与主页一致）
+  if (localStorage.getItem('darkMode') === 'on') {
+    document.documentElement.classList.add('dark-mode');
+  }
+</script>
+</body>
+</html>

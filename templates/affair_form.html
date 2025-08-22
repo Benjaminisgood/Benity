@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<meta charset="UTF-8">
+<title>事务{% if affair %}编辑{% else %}发布{% endif %}</title>
+<style>
+body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji"; }
+.form-container { max-width: 860px; }
+/* === Mention Users multi-select === */
+.multi-select { position: relative; }
+.multi-select .chips { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px; }
+.multi-select .chip { background: var(--surface-2, #f6f7f9); color: var(--text); border:1px solid var(--surface-border, #e5e7eb); border-radius: 999px; padding: 4px 8px; display:inline-flex; align-items:center; gap:6px; }
+.dark-mode .multi-select .chip { background: var(--surface, #16181d); border-color: var(--surface-border, #2a2f36); }
+.multi-select .chip .x { cursor:pointer; opacity: .7; }
+.multi-select .chip .x:hover { opacity: 1; }
+.multi-select .dropdown { position:absolute; left:0; right:0; top:100%; background: var(--surface, #fff); border:1px solid var(--surface-border, #e5e7eb); border-radius: 10px; box-shadow: var(--shadow, 0 8px 24px rgba(0,0,0,.08)); z-index: 10; max-height: 220px; overflow:auto; display:none; }
+.multi-select .item { padding:8px 10px; cursor:pointer; }
+.multi-select .item:hover { background: var(--surface-2, #f6f7f9); }
+.dark-mode .multi-select .dropdown { background: var(--surface, #16181d); border-color: var(--surface-border, #2a2f36); }
+.dark-mode .multi-select .item:hover { background: var(--surface-2, #111318); }
+.helper { color: var(--muted, #6b7280); font-size: 13px; }
+</style>
+</head>
+<body>
+<main class="container">
+  <section class="form-card">
+    <h2>{{ affair.content[:10] if affair else '发布新事务' }}</h2>
+    <form method="post" class="form-grid">
+      <div>
+        <label for="content">事务内容</label>
+        <textarea name="content" id="content" class="textarea" placeholder="请简要描述事务内容...">{{ affair.content if affair else '' }}</textarea>
+      </div>
+      <div>
+        <label for="link">转自链接</label>
+        <input type="text" name="link" id="link" class="input" placeholder="https://example.com" value="{{ affair.link if affair else '' }}">
+      </div>
+      <div>
+        <label>提到的用户（按昵称检索，可多选）</label>
+        <div id="mentionUsers" class="multi-select">
+          <div class="chips" id="mentionUserChips"></div>
+          <input type="text" id="mentionUserSearch" class="input" placeholder="输入昵称关键词...">
+          <div class="dropdown" id="mentionUserDropdown"></div>
+        </div>
+        <!-- 后端兼容：提交逗号分隔的用户ID列表 -->
+        <input type="hidden" name="mention_users" id="mention_users" value="{% if affair and mentioned_user_ids %}{{ mentioned_user_ids|join(',') }}{% endif %}">
+        <p class="helper">回车或点击下拉项添加；Backspace 删除最后一个；可多选。</p>
+      </div>
+      <div>
+        <label>提到的活动（按名称检索，可多选）</label>
+        <div id="mentionEvents" class="multi-select">
+          <div class="chips" id="mentionEventChips"></div>
+          <input type="text" id="mentionEventSearch" class="input" placeholder="输入活动名称关键词...">
+          <div class="dropdown" id="mentionEventDropdown"></div>
+        </div>
+        <!-- 后端兼容：提交逗号分隔的活动ID列表 -->
+        <input type="hidden" name="mention_events" id="mention_events" value="{% if affair and mentioned_event_ids %}{{ mentioned_event_ids|join(',') }}{% endif %}">
+        <p class="helper">回车或点击下拉项添加；Backspace 删除最后一个；可多选。</p>
+      </div>
+      <div>
+        <button type="submit" class="btn btn-primary btn-block">{% if affair %}保存修改{% else %}发布事务{% endif %}</button>
+      </div>
+    </form>
+    <p style="text-align:center; margin-top: 16px;">
+      <a href="{{ url_for('home') }}">返回主页</a>
+    </p>
+  </section>
+</main>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script>
+  // 可用用户列表：后端优先注入 all_users（[{id:1, nickname:"..."}, ...]），否则尝试从 /api/users 获取
+  (function(){
+    const prefilled = (function(){
+      const v = document.getElementById('mention_users').value.trim();
+      if (!v) return [];
+      return v.split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
+    })();
+
+    const state = { users: [], selected: new Map() }; // id -> nickname
+
+    function renderChips(){
+      const box = document.getElementById('mentionUserChips');
+      box.innerHTML = '';
+      state.selected.forEach((nick, id) => {
+        const chip = document.createElement('span');
+        chip.className = 'chip';
+        chip.innerHTML = `${nick}<span class="x" data-id="${id}">×</span>`;
+        box.appendChild(chip);
+      });
+      // 同步隐藏字段为逗号分隔 ID
+      document.getElementById('mention_users').value = Array.from(state.selected.keys()).join(',');
+    }
+
+    function filterUsers(keyword){
+      const k = keyword.trim().toLowerCase();
+      if (!k) return state.users.slice(0, 50);
+      return state.users.filter(u => (u.nickname||'').toLowerCase().includes(k)).slice(0, 50);
+    }
+
+    function renderDropdown(list){
+      const dd = document.getElementById('mentionUserDropdown');
+      dd.innerHTML = '';
+      if (!list.length) { dd.style.display = 'none'; return; }
+      list.forEach(u => {
+        // 若已选择则不显示
+        if (state.selected.has(u.id)) return;
+        const item = document.createElement('div');
+        item.className = 'item';
+        item.textContent = `${u.nickname || '(未命名)'}（ID:${u.id}）`;
+        item.dataset.id = u.id;
+        item.dataset.nickname = u.nickname || '';
+        item.addEventListener('click', () => {
+          state.selected.set(u.id, u.nickname || '');
+          renderChips();
+          dd.style.display = 'none';
+          search.value = '';
+          search.focus();
+        });
+        dd.appendChild(item);
+      });
+      dd.style.display = 'block';
+    }
+
+    function attachInteractions(){
+      const chipsBox = document.getElementById('mentionUserChips');
+      chipsBox.addEventListener('click', (e) => {
+        const x = e.target.closest('.x');
+        if (!x) return;
+        const id = parseInt(x.dataset.id, 10);
+        state.selected.delete(id);
+        renderChips();
+      });
+
+      const dd = document.getElementById('mentionUserDropdown');
+      const search = document.getElementById('mentionUserSearch');
+
+      search.addEventListener('input', () => {
+        renderDropdown(filterUsers(search.value));
+      });
+
+      search.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') { dd.style.display = 'none'; return; }
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          const first = filterUsers(search.value).find(u => !state.selected.has(u.id));
+          if (first) {
+            state.selected.set(first.id, first.nickname || '');
+            renderChips();
+            dd.style.display = 'none';
+            search.value = '';
+          }
+        }
+        if (e.key === 'Backspace' && !search.value) {
+          // 删除最后一个
+          const keys = Array.from(state.selected.keys());
+          if (keys.length) {
+            state.selected.delete(keys[keys.length - 1]);
+            renderChips();
+          }
+        }
+      });
+
+      // 点击外部关闭下拉
+      document.addEventListener('click', (ev) => {
+        const root = document.getElementById('mentionUsers');
+        if (!root.contains(ev.target)) dd.style.display = 'none';
+      });
+    }
+
+    function initSelectedFromPrefill(){
+      prefilled.forEach(id => {
+        const u = state.users.find(x => x.id === id);
+        if (u) state.selected.set(u.id, u.nickname || '');
+      });
+      renderChips();
+    }
+
+    function boot(users){
+      state.users = (users || []).filter(u => typeof u.id === 'number');
+      attachInteractions();
+      initSelectedFromPrefill();
+    }
+
+    try {
+      // 优先从模板变量注入（推荐在视图里传入 all_users=[{id:int, nickname:str}, ...]）
+      const injected = {{ all_users|tojson if all_users is defined else 'null' }};
+      if (injected && Array.isArray(injected)) {
+        boot(injected);
+      } else {
+        // 兜底尝试从 API 获取（如果你提供了该接口）
+        fetch('/api/users')
+          .then(r => r.ok ? r.json() : [])
+          .then(data => boot(Array.isArray(data) ? data : []))
+          .catch(() => boot([]));
+      }
+    } catch (e) {
+      boot([]);
+    }
+  })();
+</script>
+<script>
+  // 可用活动列表：优先 all_events（[{id,name}]），否则 /api/events
+  (function(){
+    const prefilled = (function(){
+      const v = document.getElementById('mention_events').value.trim();
+      if (!v) return [];
+      return v.split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
+    })();
+
+    const state = { events: [], selected: new Map() }; // id -> name
+
+    function renderChips(){
+      const box = document.getElementById('mentionEventChips');
+      box.innerHTML = '';
+      state.selected.forEach((name, id) => {
+        const chip = document.createElement('span');
+        chip.className = 'chip';
+        chip.innerHTML = `${name}<span class=\"x\" data-id=\"${id}\">×</span>`;
+        box.appendChild(chip);
+      });
+      document.getElementById('mention_events').value = Array.from(state.selected.keys()).join(',');
+    }
+
+    function filterEvents(keyword){
+      const k = keyword.trim().toLowerCase();
+      if (!k) return state.events.slice(0, 50);
+      return state.events.filter(e => (e.name||'').toLowerCase().includes(k)).slice(0, 50);
+    }
+
+    function renderDropdown(list){
+      const dd = document.getElementById('mentionEventDropdown');
+      dd.innerHTML = '';
+      if (!list.length) { dd.style.display = 'none'; return; }
+      list.forEach(e => {
+        if (state.selected.has(e.id)) return;
+        const item = document.createElement('div');
+        item.className = 'item';
+        item.textContent = `${e.name || '(未命名)'}（ID:${e.id}）`;
+        item.dataset.id = e.id;
+        item.dataset.name = e.name || '';
+        item.addEventListener('click', () => {
+          state.selected.set(e.id, e.name || '');
+          renderChips();
+          dd.style.display = 'none';
+          search.value = '';
+          search.focus();
+        });
+        dd.appendChild(item);
+      });
+      dd.style.display = 'block';
+    }
+
+    function attachInteractions(){
+      const chipsBox = document.getElementById('mentionEventChips');
+      chipsBox.addEventListener('click', (e) => {
+        const x = e.target.closest('.x');
+        if (!x) return;
+        const id = parseInt(x.dataset.id, 10);
+        state.selected.delete(id);
+        renderChips();
+      });
+
+      const dd = document.getElementById('mentionEventDropdown');
+      const search = document.getElementById('mentionEventSearch');
+
+      search.addEventListener('input', () => {
+        renderDropdown(filterEvents(search.value));
+      });
+
+      search.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') { dd.style.display = 'none'; return; }
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          const first = filterEvents(search.value).find(ev => !state.selected.has(ev.id));
+          if (first) {
+            state.selected.set(first.id, first.name || '');
+            renderChips();
+            dd.style.display = 'none';
+            search.value = '';
+          }
+        }
+        if (e.key === 'Backspace' && !search.value) {
+          const keys = Array.from(state.selected.keys());
+          if (keys.length) {
+            state.selected.delete(keys[keys.length - 1]);
+            renderChips();
+          }
+        }
+      });
+
+      document.addEventListener('click', (ev) => {
+        const root = document.getElementById('mentionEvents');
+        if (!root.contains(ev.target)) dd.style.display = 'none';
+      });
+    }
+
+    function initSelectedFromPrefill(){
+      prefilled.forEach(id => {
+        const e = state.events.find(x => x.id === id);
+        if (e) state.selected.set(e.id, e.name || '');
+      });
+      renderChips();
+    }
+
+    function boot(events){
+      state.events = (events || []).filter(e => typeof e.id === 'number');
+      attachInteractions();
+      initSelectedFromPrefill();
+    }
+
+    try {
+      const injected = {{ all_events|tojson if all_events is defined else 'null' }};
+      if (injected && Array.isArray(injected)) {
+        boot(injected);
+      } else {
+        fetch('/api/events')
+          .then(r => r.ok ? r.json() : [])
+          .then(data => boot(Array.isArray(data) ? data : []))
+          .catch(() => boot([]));
+      }
+    } catch (e) { boot([]); }
+  })();
+</script>
+<script>
+  if (localStorage.getItem("darkMode") === "on") {
+    document.documentElement.classList.add("dark-mode");
+  }
+</script>
+</body>
+</html>
